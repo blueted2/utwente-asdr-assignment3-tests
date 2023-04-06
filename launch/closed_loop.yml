@@ -1,0 +1,65 @@
+launch:
+
+- arg:
+    name: threshold
+    default: "180"
+
+- arg:
+    name: tau_s
+    default: "1.0"
+
+- node:
+    pkg: image_tools
+    exec: cam2image
+    param:
+    -
+      name: frequency
+      value: 10.0
+    
+- node:
+    pkg: image_tools
+    exec: showimage
+    remap:
+      - 
+        from: /image
+        to: /image_thresholded
+
+- node:
+    pkg: light_pos
+    exec: light_pos
+    remap:
+    -
+      from: /image
+      to: /moving_camera_output
+    param:
+    -
+      name: brightness_threshold
+      value: $(var threshold)
+
+
+- node: 
+    pkg: jiwy_simulator
+    exec: jiwy_simulator
+    remap:
+      -
+        from: /webcam_input
+        to: /image
+
+      -
+        from: /setpoint
+        to: /setpoint_output
+
+
+- node:
+    pkg: closed_loop
+    exec: controller
+    param:
+    -
+      name: tau_s
+      value: $(var tau_s)
+    remap:
+    -
+      from: /cog_input
+      to: /cog_pos
+
+

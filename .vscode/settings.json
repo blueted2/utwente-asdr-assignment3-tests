@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "*.h": "c",
+        "chrono": "cpp",
+        "array": "cpp"
+    },
+    "python.autoComplete.extraPaths": [
+        "/home/ram-user/ass3/install/asdfr_interfaces/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/ram-user/ass3/install/asdfr_interfaces/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "C_Cpp.errorSquiggles": "enabled"
+}
