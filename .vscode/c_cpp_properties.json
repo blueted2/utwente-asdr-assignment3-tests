@@ -6,10 +6,11 @@
                 "limitSymbolsToIncludedHeaders": false
             },
             "includePath": [
+                "/home/gregory/develop/asdr/utwente-asdr-assignment3-tests/install/asdfr_interfaces/include/**",
                 "/opt/ros/humble/include/**",
+                "/home/gregory/develop/asdr/utwente-asdr-assignment3-tests/src/light_pos_node/src/light_pos/include/**",
                 "/usr/include/**",
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/src/20sim_closed_loop/controller"
+                "${workspaceFolder}/src/sim20/ControllerPanTilt"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
