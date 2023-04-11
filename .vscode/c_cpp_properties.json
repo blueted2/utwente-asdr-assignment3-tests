@@ -10,7 +10,9 @@
                 "/opt/ros/humble/include/**",
                 "/home/gregory/develop/asdr/utwente-asdr-assignment3-tests/src/light_pos_node/src/light_pos/include/**",
                 "/usr/include/**",
-                "${workspaceFolder}/src/sim20/ControllerPanTilt"
+                "${workspaceFolder}/src/sim20/ControllerPanTilt",
+                "${workspaceFolder}/install/asdfr_interfaces/include/asdfr_interfaces",
+                "${workspaceFolder}"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",

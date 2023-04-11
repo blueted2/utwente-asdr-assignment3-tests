@@ -10,44 +10,27 @@
 #include "framework/superThread.h"
 #include "framework/icoCommClass.h"
 
-#include "controllers/ControllerPan.h"
+#include "ControllerPanTilt/ControllerPanTilt.h"
 
-// #include <Your 20-sim-code-generated h-file?> Don't forget to compile the cpp file by adding it to CMakeLists.txt
+#include "fpga_indices.h"
 
+#define U_MEASURED_PAN_INDEX    0
+#define U_MEASURED_TILT_INDEX   1
+#define U_SETPOINT_PAN_INDEX    2
+#define U_SETPOINT_TILT_INDEX   3
 
-enum output_ports {
-    P1_PWM   = 0, 
-    P1_OUT_1 = 1,
-    P2_PWM   = 2, 
-    P2_OUT_1 = 3,
-    P3_PWM   = 4, 
-    P3_OUT_1 = 5,
-    P4_PWM   = 6, 
-    P4_OUT_1 = 7
-};
+#define Y_STEERING_PAN_INDEX    0
+#define Y_STEERING_TILT_INDEX   1
 
-enum input_ports {
-    P1_ENC   = 0, 
-    P1_IN_1  = 1,
-    P1_IN_2  = 2,
-    P2_ENC   = 3, 
-    P2_IN_1  = 4,
-    P2_IN_2  = 5,
-    P3_ENC   = 6, 
-    P3_IN_1  = 7,
-    P3_IN_2  = 8,
-    P4_ENC   = 9, 
-    P4_IN_1  = 10,
-    P4_IN_2  = 11
-};
+// XDDP ports
 
-#define XDDP_PAN_SETPOINT_PORT   20
-#define XDDP_TILT_SETPOINT_PORT  30
+// send setpoint to controller
+#define XDDP_SETPOINT_PORT   20 
 
-#define U_MEASURED_INDEX 0
-#define U_SETPOINT_INDEX 1
+// log position and output back to non-rt
+#define XDDP_POSITION_LOG_PORT  21
+#define XDDP_OUTPUT_LOG_PORT    22
 
-#define Y_STEERING_INDEX 0
 
 volatile bool exitbool = false;
 
@@ -70,37 +53,87 @@ int main()
 
     // CONFIGURE, CREATE AND START THREADS HERE
 
-    // bind P1_PWM to u[0] and Y_STEERING_INDEX to y[0]
-    int sendParameters[8]     = { [0 ... 7]  = -1, [P1_PWM] = Y_STEERING_INDEX };
-    int receiveParameters[12] = { [0 ... 11] = -1, [P1_ENC] = U_MEASURED_INDEX };
+    /*
+
+    +---------+-------+--------------+----+------------------+
+    |         | Index | Description  |    |       Port       |
+    +=========+=======+==============+====+==================+
+    | Inputs  |   0   | MeasuredPan  | <- | IcoComm - P1_ENC |
+    |         +-------+--------------+----+------------------+
+    |         |   1   | MeasuredTilt | <- | IcoComm - P2_ENC |
+    |         +-------+--------------+----+------------------+
+    |         |   2   | SetPointPan  | <- |     XDDP - 0     |
+    |         +-------+--------------+----+------------------+
+    |         |   3   | SetPointTilt | <- |     XDDP - 1     |
+    +=========+=======+==============+====+==================+
+    | Outputs |   0   | SteeringPan  | -> | IcoComm - P1_PWM |
+    |         +-------+--------------+----+------------------+
+    |         |   1   | SteeringTilt | -> | IcoComm - P2_PWM |
+    +---------+-------+--------------+----+------------------+
+
+    */
+
+    // configure where motor outputs get written
+    int sendParameters[8] = { 
+        [0 ... 7]  = -1, 
+        [P1_PWM] = Y_STEERING_PAN_INDEX,    // pan output goes to P1_PWM
+        [P2_PWM] = Y_STEERING_TILT_INDEX    // tilt output goes to P2_PWM
+    };
+
+
+    // configure from where pan/tilt values are read
+    int receiveParameters[12] = { 
+        [0 ... 11] = -1, 
+        [P1_ENC] = U_MEASURED_PAN_INDEX,    // P1_ENC goes to pan input
+        [P2_ENC] = U_MEASURED_TILT_INDEX    // P2_ENC goes to tilt input
+    };
     
     auto icoComm = new IcoComm(
         sendParameters,
         receiveParameters
     );
 
-    // bind 
-    int xddp_uParam_Setpoint [1] = { 1 } ;
+    // configure where setpoint values get stored when received
+    int xddp_uParam_Setpoint[2] = {
+        U_SETPOINT_PAN_INDEX,   // first value is pan setpoint
+        U_SETPOINT_TILT_INDEX   // second value is tilt setpoint
+    };
 
-    frameworkComm *pan_controller_uPorts[] = {
+    // // configure encoder position logging
+    // int xddp_yParam_Logging[2] = {
+    //     U_MEASURED_PAN_INDEX,   // first value is pan position
+    //     U_MEASURED_TILT_INDEX   // second value is tilt position
+    // };
+
+    // configure motor output logging
+    int xddp_yParam_Logging[2] = {
+        Y_STEERING_PAN_INDEX,   // first value is pan output
+        Y_STEERING_TILT_INDEX   // second value is tilt output
+    };
+
+    // controller gets position inputs from FPGA/SPI/IcoComm and setpoint inputs from ROS/XDDPComm
+    frameworkComm *uPorts[] = {
         icoComm,
-        new XDDPComm(XDDP_PAN_SETPOINT_PORT, -1, 1, xddp_uParam_Setpoint)
+        new XDDPComm(XDDP_SETPOINT_PORT, -1, 2, xddp_uParam_Setpoint)
     };
 
-    frameworkComm *pan_controller_yPorts[] = {
-        icoComm
+    // controller outputs motor power to FPGA/SPI/IcoComm and logs position and output to ROS/XDDPComm
+    frameworkComm *yPorts[] = {
+        icoComm,
+        new XDDPComm(XDDP_POSITION_LOG_PORT, -1, 2, xddp_yParam_Logging),
     };
 
-    
-    runnable *pan_controller = new wrapper<ControllerPan>(
-        new ControllerPan,
-        pan_controller_uPorts,
-        pan_controller_yPorts,
+    runnable *controller = new wrapper<ControllerPanTilt>(
+        new ControllerPanTilt,
+        uPorts,
+        yPorts,
         2,
         1
     );
 
-    xenoThread *pan_controller_thread = new xenoThread(pan_controller); 
+    xenoThread controller_thread = xenoThread(controller); 
+    controller_thread.init(1000000, 99, 1);
+    controller_thread.start("controller");
 
 
     // WAIT FOR CNTRL-C

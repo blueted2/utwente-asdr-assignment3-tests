@@ -97,7 +97,7 @@ endfunction()
 FILE(GLOB class_files ${CMAKE_CURRENT_SOURCE_DIR}/framework/*.cpp)
 list(APPEND class_list ${class_files})
 
-find_xeno_skin_variables(XENOMAI_POSIX posix)
+# find_xeno_skin_variables(XENOMAI_POSIX posix)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)

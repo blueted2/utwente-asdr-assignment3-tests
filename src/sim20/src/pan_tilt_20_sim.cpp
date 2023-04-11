@@ -21,10 +21,16 @@ public:
   Controller20sim() : Node("controller_20_sim")
   {
     _cpt.Initialize(_u, _y, 0.0);
+    _cpt.SetFinishTime(0.0);
 
     _timer = this->create_wall_timer(
       std::chrono::milliseconds(1),
       std::bind(&Controller20sim::tick, this)
+    );
+
+    _publish_timer = this->create_wall_timer(
+      std::chrono::milliseconds(50),
+      std::bind(&Controller20sim::publish, this)
     );
 
     _position_sub = this->create_subscription<Point2>(
@@ -54,6 +60,7 @@ private:
 
   // timer
   rclcpp::TimerBase::SharedPtr _timer;
+  rclcpp::TimerBase::SharedPtr _publish_timer;
 
   // subscriptions
   rclcpp::Subscription<asdfr_interfaces::msg::Point2>::SharedPtr _position_sub;
@@ -65,15 +72,14 @@ private:
 
   void tick() {
     _cpt.Calculate(_u, _y);
+  }
 
-    Point2 msg;
+  void publish() {
+    auto msg = asdfr_interfaces::msg::Point2();
     msg.x = _y[0];
     msg.y = _y[1];
-
     _motor_power_pub->publish(msg);
 
-    // RCLCPP_INFO(this->get_logger(), "u: %f, %f, %f, %f", _u[0], _u[1], _u[2], _u[3]);
-    // RCLCPP_INFO(this->get_logger(), "y: %f, %f", _y[0], _y[1]);
   }
 
   void on_position(const asdfr_interfaces::msg::Point2::SharedPtr msg) {

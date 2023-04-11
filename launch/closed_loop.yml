@@ -6,7 +6,7 @@ launch:
 
 - arg:
     name: tau_s
-    default: "1.0"
+    default: "0.1"
 
 - node:
     pkg: image_tools
@@ -15,6 +15,9 @@ launch:
     -
       name: frequency
       value: 10.0
+    -
+      name: burger_mode
+      value: true
     
 - node:
     pkg: image_tools
@@ -63,3 +66,10 @@ launch:
       to: /cog_pos
 
 
+- node:
+    pkg: sim20
+    exec: pan_tilt_20_sim
+    remap:
+      -
+        from: /setpoint
+        to: /setpoint_output
