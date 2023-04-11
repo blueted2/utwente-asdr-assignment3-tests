@@ -97,7 +97,7 @@ endfunction()
 FILE(GLOB class_files ${CMAKE_CURRENT_SOURCE_DIR}/framework/*.cpp)
 list(APPEND class_list ${class_files})
 
-# find_xeno_skin_variables(XENOMAI_POSIX posix)
+find_xeno_skin_variables(XENOMAI_POSIX posix)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -109,17 +109,19 @@ target_link_libraries(class_libaries PRIVATE ${XENOMAI_POSIX_LIBRARIES})
 target_compile_definitions(class_libaries PRIVATE ${XENOMAI_POSIX_DEFINITIONS})
 
 
+FILE(GLOB common_files ${CMAKE_CURRENT_SOURCE_DIR}/ControllerPanTilt/common/*.cpp)
+
 # Recipe for your own program
 # If you have multiple cpp files (e.g., also generated code from 20-sim), add
 # them to the first line, e.g.,
 # add_executable(jiwy ${CMAKE_CURRENT_SOURCE_DIR} main.cpp model.cpp)
-add_executable(jiwy ${CMAKE_CURRENT_SOURCE_DIR} jiwy_main.cpp)
+add_executable(jiwy ${CMAKE_CURRENT_SOURCE_DIR} jiwy_main.cpp ${common_files} ControllerPanTilt/ControllerPanTilt.cpp)
 target_link_libraries(jiwy PRIVATE  class_libaries) # Use the Meijer framework
 target_include_directories(jiwy PRIVATE ${XENOMAI_POSIX_INCLUDE_DIRS}) # For Xenomai
 target_compile_definitions(jiwy PRIVATE ${XENOMAI_POSIX_DEFINITIONS}) # For Xenomai
 
-add_executable(xeno_test ${CMAKE_CURRENT_SOURCE_DIR} xeno_test.cpp)
-target_link_libraries(xeno_test PRIVATE  class_libaries) # Use the Meijer framework
-target_include_directories(xeno_test PRIVATE ${XENOMAI_POSIX_INCLUDE_DIRS}) # For Xenomai
-target_compile_definitions(xeno_test PRIVATE ${XENOMAI_POSIX_DEFINITIONS}) # For Xenomai
+# add_executable(xeno_test ${CMAKE_CURRENT_SOURCE_DIR} xeno_test.cpp)
+# target_link_libraries(xeno_test PRIVATE  class_libaries) # Use the Meijer framework
+# target_include_directories(xeno_test PRIVATE ${XENOMAI_POSIX_INCLUDE_DIRS}) # For Xenomai
+# target_compile_definitions(xeno_test PRIVATE ${XENOMAI_POSIX_DEFINITIONS}) # For Xenomai
 
