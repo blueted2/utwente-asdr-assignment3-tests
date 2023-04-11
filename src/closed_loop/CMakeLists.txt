@@ -14,7 +14,10 @@ find_package(asdfr_interfaces REQUIRED)
 
 add_executable(controller
   src/controller.cpp)
+add_executable(splitter
+  src/splitter.cpp)
 ament_target_dependencies(controller rclcpp std_msgs  asdfr_interfaces)
+ament_target_dependencies(splitter rclcpp std_msgs  asdfr_interfaces)
 
 target_include_directories(controller PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -22,6 +25,8 @@ target_include_directories(controller PUBLIC
 target_compile_features(controller PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
 install(TARGETS controller
+  DESTINATION lib/${PROJECT_NAME})
+install(TARGETS splitter
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
