@@ -73,3 +73,12 @@ launch:
       -
         from: /setpoint
         to: /setpoint_output
+
+
+- node:
+    pkg: closed_loop
+    exec: splitter
+    remap:
+      -
+        from: /input
+        to: /setpoint_output

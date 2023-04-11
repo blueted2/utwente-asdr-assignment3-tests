@@ -16,8 +16,8 @@ add_executable(controller
   src/controller.cpp)
 add_executable(splitter
   src/splitter.cpp)
-ament_target_dependencies(controller rclcpp std_msgs  asdfr_interfaces)
-ament_target_dependencies(splitter rclcpp std_msgs  asdfr_interfaces)
+ament_target_dependencies(controller rclcpp std_msgs asdfr_interfaces)
+ament_target_dependencies(splitter rclcpp std_msgs asdfr_interfaces)
 
 target_include_directories(controller PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
