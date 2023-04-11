@@ -32,12 +32,22 @@
 #define XDDP_OUTPUT_LOG_PORT    22
 
 
+// conversion functions for IcoComm
+void readConvert(const double *src, double *dst) { 
+    dst[0] = src[0];
+    dst[1] = src[1];
+}
+
+void writeConvert(const double *src, double *dst) { 
+    dst[0] = src[0];
+    dst[1] = src[1];
+}
+
 class ControllerPanTiltRunnable : public wrapper<ControllerPanTilt>
 {
 private:
     frameworkComm *uPorts[2];
     frameworkComm *yPorts[2];
-
 public:
     // TODO: pass xddp ports as arguments instead of using hardcoded defines
     ControllerPanTiltRunnable() : wrapper<ControllerPanTilt>(
@@ -63,6 +73,10 @@ public:
             sendParameters,
             receiveParameters
         );
+
+        icoComm->setReadConvertFcn(readConvert);
+        icoComm->setWriteConvertFcn(writeConvert);
+
 
         // configure where setpoint values get stored when received
         int xddp_uParam_Setpoint[2] = {
@@ -193,7 +207,7 @@ int main()
     //     uPorts,
     //     yPorts,
     //     2,
-    //     1
+    //     2
     // );
 
    }

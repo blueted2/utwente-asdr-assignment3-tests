@@ -118,4 +118,8 @@ target_link_libraries(jiwy PRIVATE  class_libaries) # Use the Meijer framework
 target_include_directories(jiwy PRIVATE ${XENOMAI_POSIX_INCLUDE_DIRS}) # For Xenomai
 target_compile_definitions(jiwy PRIVATE ${XENOMAI_POSIX_DEFINITIONS}) # For Xenomai
 
+add_executable(xeno_test ${CMAKE_CURRENT_SOURCE_DIR} xeno_test.cpp)
+target_link_libraries(xeno_test PRIVATE  class_libaries) # Use the Meijer framework
+target_include_directories(xeno_test PRIVATE ${XENOMAI_POSIX_INCLUDE_DIRS}) # For Xenomai
+target_compile_definitions(xeno_test PRIVATE ${XENOMAI_POSIX_DEFINITIONS}) # For Xenomai
 
