@@ -2,11 +2,11 @@ launch:
 
 - arg:
     name: threshold
-    default: "180"
+    default: "230"
 
 - arg:
     name: tau_s
-    default: "0.1"
+    default: "4.0"
 
 - node:
     pkg: image_tools
@@ -16,41 +16,44 @@ launch:
       name: frequency
       value: 10.0
     -
-      name: burger_mode
-      value: true
+      name: depth
+      value: 1
+    # -
+    #   name: burger_mode
+    #   value: true
     
-- node:
-    pkg: image_tools
-    exec: showimage
-    remap:
-      - 
-        from: /image
-        to: /image_thresholded
+# - node:
+#     pkg: image_tools
+#     exec: showimage
+#     remap:
+#       - 
+#         from: /image
+#         to: /image_thresholded
 
 - node:
     pkg: light_pos
     exec: light_pos
-    remap:
-    -
-      from: /image
-      to: /moving_camera_output
+    # remap:
+    # -
+    #   from: /image
+    #   to: /moving_camera_output
     param:
     -
       name: brightness_threshold
       value: $(var threshold)
 
 
-- node: 
-    pkg: jiwy_simulator
-    exec: jiwy_simulator
-    remap:
-      -
-        from: /webcam_input
-        to: /image
+# - node: 
+#     pkg: jiwy_simulator
+#     exec: jiwy_simulator
+#     remap:
+#       -
+#         from: /webcam_input
+#         to: /image
 
-      -
-        from: /setpoint
-        to: /setpoint_output
+#       -
+#         from: /setpoint
+#         to: /setpoint_output
 
 
 - node:
@@ -66,13 +69,13 @@ launch:
       to: /cog_pos
 
 
-- node:
-    pkg: sim20
-    exec: pan_tilt_20_sim
-    remap:
-      -
-        from: /setpoint
-        to: /setpoint_output
+# - node:
+#     pkg: sim20
+#     exec: pan_tilt_20_sim
+#     remap:
+#       -
+#         from: /setpoint
+#         to: /setpoint_output
 
 
 - node:
@@ -82,3 +85,31 @@ launch:
       -
         from: /input
         to: /setpoint_output
+
+
+- node:
+    pkg: ros2-xenomai
+    exec: listener
+    param:
+      - 
+        name: topicName
+        value: output_y
+      -
+        name: xddpPort
+        value: 10
+
+- node:
+    pkg: ros2-xenomai
+    exec: listener
+    param:
+      - 
+        name: topicName
+        value: output_x
+      -
+        name: xddpPort
+        value: 15
+
+
+
+# ros2 run ros2-xenomai listener --ros-args -p "topicName:=receivedData"
+# -p "xddpPort:=26"

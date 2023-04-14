@@ -52,7 +52,8 @@ int IcoIO::open_spi()
     }
 
     // value = BCM283X_SPI_SPEED_30kHz;
-    value = BCM283X_SPI_SPEED_31MHz;
+    // value = BCM283X_SPI_SPEED_31MHz;
+    value = BCM283X_SPI_SPEED_8MHz;
     res = ioctl(device_handle_, BCM283X_SPI_SET_SPEED, &value);
     if (res < 0)
     {
@@ -208,10 +209,10 @@ size_t IcoIO::update_io(IcoWrite write_val, IcoRead* read_val)
 
     /* Receive to rx buffer */
     size = read(device_handle_, (void *) rx_buffer_, spi_frame_size); 
-    printf("read: ");
-    for(int i=0;i<spi_frame_size;i++)		
-        printf("0x%02x ", rx_buffer_[i]);
-    printf("\n");
+    // printf("read: ");
+    // for(int i=0;i<spi_frame_size;i++)		
+    //     printf("0x%02x ", rx_buffer_[i]);
+    // printf("\n");
     
     ReadBytes enc_bytes1;
     ReadBytes enc_bytes2;

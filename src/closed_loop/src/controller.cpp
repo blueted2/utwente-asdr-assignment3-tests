@@ -10,10 +10,10 @@ using std::placeholders::_1;
 using namespace std::chrono_literals;
 
 // Global parameters (we need them in different places). You might want to change these.
-const double x_limit_rad = 0.8;
-const double y_limit_rad = 0.6;
-const int moving_camera_output_width = 160;
-const int moving_camera_output_height = 120;
+const double x_limit_rad = 1.6;
+const double y_limit_rad = 1.1;
+const int moving_camera_output_width = 320;
+const int moving_camera_output_height = 240;
 
 const std::chrono::milliseconds sampleTime = 50ms;
 

@@ -74,12 +74,15 @@ class LightPos : public rclcpp::Node
           brightness = getPixelBrightness(img, x, y);    
           if (brightness >= brightness_threshold)
           {
-            setPixelColor(thr_image, x, y, thresholdColor, thresholdColor, thresholdColor);
+            // setPixelColor(thr_image, x, y, thresholdColor, thresholdColor, thresholdColor);
             cog_sum_x += x;
             cog_sum_y += y;
             cog_N++;
-          } else 
-            setPixelColor(thr_image, x, y, 0, 0, 0);
+          } 
+          else {
+            // setPixelColor(thr_image, x, y, 0, 0, 0);
+          }
+            
         }
       }
 
@@ -90,16 +93,16 @@ class LightPos : public rclcpp::Node
       {
         cog_x = int(round(cog_sum_x / cog_N));
         cog_y = int(round(cog_sum_y / cog_N));
-        DrawBigPixel(thr_image, cog_x, cog_y, 255,0,0,5);
+      //   DrawBigPixel(thr_image, cog_x, cog_y, 255,0,0,5);
+
+        asdfr_interfaces::msg::Point2 cog_msg;
+        cog_msg.x = cog_x;
+        cog_msg.y = cog_y;
+        cog_pos_topic_->publish(cog_msg);
       }
 
-      asdfr_interfaces::msg::Point2 cog_msg;
-      cog_msg.x = cog_x;
-      cog_msg.y = cog_y;
-      cog_pos_topic_->publish(cog_msg);
-
-      // For debugging purposes
-      image_thresholded_topic_->publish(*thr_image);
+      // // For debugging purposes
+      // image_thresholded_topic_->publish(*thr_image);
     }
 
 };

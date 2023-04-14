@@ -25,7 +25,8 @@
 // XDDP ports
 
 // send setpoint to controller
-#define XDDP_SETPOINT_PORT   10 
+#define XDDP_SETPOINT_PORT_TILT   10 
+#define XDDP_SETPOINT_PORT_PAN    15
 
 // log position and output back to non-rt
 #define XDDP_POSITION_LOG_PORT  26
@@ -36,103 +37,97 @@
 void readConvert(const double *src, double *dst) { 
     if (src[0] > 8192) dst[0] = src[0] - 16383; else dst[0] = src[0];
     if (src[3] > 8192) dst[3] = src[3] - 16383; else dst[3] = src[3];
-    // dst[0] =;
-    // dst[1] = src[1] - 1000;
-    // dst[2] = src[2] - 1000;
-    // dst[3] = src[3] - 1000;
-    printf("readcvt: %.2f, %.2f, %.2f, %.2f\n", dst[0], dst[1], dst[2], dst[3]);
+
+    dst[0] = dst[0] / 2000 * 2 * 3.1415;
+    dst[3] = dst[3] / 1250 * 2 * 3.1415 / 4;
 }
 
 void writeConvert(const double *src, double *dst) { 
-    dst[0] = src[0];// / 10;
-    dst[1] = src[1];// / 10;
-    dst[2] = src[2];// / 10;
-    dst[3] = src[3];// / 10;
-
-    printf("writecvt: %.2f, %.2f, %.2f, %.2f\n", dst[0], dst[1], dst[2], dst[3]);
+    dst[0] = src[0] * 4095;
+    dst[2] = src[2] * 4095 * 4;// / 10;
 }
 
-class ControllerPanTiltRunnable : public wrapper<ControllerPanTilt>
-{
-private:
-    frameworkComm *uPorts[2];
-    frameworkComm *yPorts[2];
+// class ControllerPanTiltRunnable : public wrapper<ControllerPanTilt>
+// {
+// private:
+//     frameworkComm *uPorts[2];
+//     frameworkComm *yPorts[2];
 
-    int sendParameters[8];
-    int receiveParameters[12];
+//     int sendParameters[8];
+//     int receiveParameters[12];
 
-    IcoComm *icoComm;
+//     IcoComm *icoComm;
 
-    int xddp_uParam_Setpoint[2];
-    int xddp_yParam_Logging[2];
+//     int xddp_uParam_Setpoint[2];
+//     int xddp_yParam_Logging[2];
 
 
 
-public:
-    // TODO: pass xddp ports as arguments instead of using hardcoded defines
-    ControllerPanTiltRunnable() : wrapper<ControllerPanTilt>(
-        new ControllerPanTilt, uPorts, yPorts, 2, 2
-    ) {
+// public:
+//     // TODO: pass xddp ports as arguments instead of using hardcoded defines
+//     ControllerPanTiltRunnable() : wrapper<ControllerPanTilt>(
+//         new ControllerPanTilt, uPorts, yPorts, 2, 2
+//     ) {
         
-        // configure where motor outputs get written
-        int sendParameters[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
-        //     [0 ... 7]  = -1, 
-        //     [P1_PWM] = Y_STEERING_PAN_INDEX,    // pan output goes to P1_PWM
-        //     [P2_PWM] = Y_STEERING_TILT_INDEX    // tilt output goes to P2_PWM
-        // };
+//         // configure where motor outputs get written
+//         int sendParameters[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
+//         //     [0 ... 7]  = -1, 
+//         //     [P1_PWM] = Y_STEERING_PAN_INDEX,    // pan output goes to P1_PWM
+//         //     [P2_PWM] = Y_STEERING_TILT_INDEX    // tilt output goes to P2_PWM
+//         // };
 
-        // sendParameters[P1_PWM] = Y_STEERING_PAN_INDEX;
-        // sendParameters[P2_PWM] = Y_STEERING_TILT_INDEX;
+//         // sendParameters[P1_PWM] = Y_STEERING_PAN_INDEX;
+//         // sendParameters[P2_PWM] = Y_STEERING_TILT_INDEX;
 
 
-        // configure from where pan/tilt values are read
-        int receiveParameters[12] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-        //     [0 ... 11] = -1, 
-        //     [P1_ENC] = U_MEASURED_PAN_INDEX,    // P1_ENC goes to pan input
-        //     [P2_ENC] = U_MEASURED_TILT_INDEX    // P2_ENC goes to tilt input
-        // };
+//         // configure from where pan/tilt values are read
+//         int receiveParameters[12] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+//         //     [0 ... 11] = -1, 
+//         //     [P1_ENC] = U_MEASURED_PAN_INDEX,    // P1_ENC goes to pan input
+//         //     [P2_ENC] = U_MEASURED_TILT_INDEX    // P2_ENC goes to tilt input
+//         // };
 
-        // receiveParameters[P1_ENC] = U_MEASURED_PAN_INDEX;
-        // receiveParameters[P2_ENC] = U_MEASURED_TILT_INDEX;
+//         // receiveParameters[P1_ENC] = U_MEASURED_PAN_INDEX;
+//         // receiveParameters[P2_ENC] = U_MEASURED_TILT_INDEX;
 
         
-        auto icoComm = new IcoComm(
-            sendParameters,
-            receiveParameters
-        );
+//         auto icoComm = new IcoComm(
+//             sendParameters,
+//             receiveParameters
+//         );
 
-        // icoComm->setReadConvertFcn(readConvert);
-        // icoComm->setWriteConvertFcn(writeConvert);
+//         // icoComm->setReadConvertFcn(readConvert);
+//         // icoComm->setWriteConvertFcn(writeConvert);
 
 
-        // configure where setpoint values get stored when received
-        int xddp_uParam_Setpoint[2] = {
-            U_SETPOINT_PAN_INDEX,   // first value is pan setpoint
-            U_SETPOINT_TILT_INDEX   // second value is tilt setpoint
-        };
+//         // configure where setpoint values get stored when received
+//         int xddp_uParam_Setpoint[2] = {
+//             U_SETPOINT_PAN_INDEX,   // first value is pan setpoint
+//             U_SETPOINT_TILT_INDEX   // second value is tilt setpoint
+//         };
 
-        // // configure encoder position logging
-        // int xddp_yParam_Logging[2] = {
-        //     U_MEASURED_PAN_INDEX,   // first value is pan position
-        //     U_MEASURED_TILT_INDEX   // second value is tilt position
-        // };
+//         // // configure encoder position logging
+//         // int xddp_yParam_Logging[2] = {
+//         //     U_MEASURED_PAN_INDEX,   // first value is pan position
+//         //     U_MEASURED_TILT_INDEX   // second value is tilt position
+//         // };
 
-        // configure motor output logging
-        int xddp_yParam_Logging[2] = {
-            Y_STEERING_PAN_INDEX,   // first value is pan output
-            Y_STEERING_TILT_INDEX   // second value is tilt output
-        };
+//         // // configure motor output logging
+//         // int xddp_yParam_Logging[2] = {
+//         //     Y_STEERING_PAN_INDEX,   // first value is pan output
+//         //     Y_STEERING_TILT_INDEX   // second value is tilt output
+//         // };
 
-        // controller gets position inputs from FPGA/SPI/IcoComm and setpoint inputs from ROS/XDDPComm
-        this->uPorts[0] = icoComm;
-        this->uPorts[1] = new XDDPComm(XDDP_SETPOINT_PORT, -1, 2, xddp_uParam_Setpoint);
+//         // controller gets position inputs from FPGA/SPI/IcoComm and setpoint inputs from ROS/XDDPComm
+//         this->uPorts[0] = icoComm;
+//         this->uPorts[1] = new XDDPComm(XDDP_SETPOINT_PORT, -1, 2, xddp_uParam_Setpoint);
 
-        // controller outputs motor power to FPGA/SPI/IcoComm and logs position and output to ROS/XDDPComm
-        this->yPorts[0] = icoComm;
-        this->yPorts[1] = new XDDPComm(XDDP_POSITION_LOG_PORT, -1, 2, xddp_yParam_Logging);
+//         // controller outputs motor power to FPGA/SPI/IcoComm and logs position and output to ROS/XDDPComm
+//         this->yPorts[0] = icoComm;
+//         this->yPorts[1] = new XDDPComm(XDDP_POSITION_LOG_PORT, -1, 2, xddp_yParam_Logging);
 
-    }
-};
+//     }
+// };
 
 
 
@@ -186,8 +181,8 @@ int main()
     //     [P2_PWM] = Y_STEERING_TILT_INDEX    // tilt output goes to P2_PWM
     // };
 
-    sendParameters[P1_PWM] = Y_STEERING_PAN_INDEX;
-    sendParameters[P2_PWM] = Y_STEERING_TILT_INDEX;
+    sendParameters[P2_PWM] = Y_STEERING_PAN_INDEX;
+    sendParameters[P1_PWM] = Y_STEERING_TILT_INDEX;
 
 
     // configure from where pan/tilt values are read
@@ -197,59 +192,56 @@ int main()
     //     [P2_ENC] = U_MEASURED_TILT_INDEX    // P2_ENC goes to tilt input
     // };
 
-    receiveParameters[0] = U_MEASURED_PAN_INDEX;
-    receiveParameters[3] = U_MEASURED_TILT_INDEX;
+    receiveParameters[3] = U_MEASURED_PAN_INDEX;
+    receiveParameters[0] = U_MEASURED_TILT_INDEX;
     
     auto icoComm = new IcoComm(
         sendParameters,
         receiveParameters
-    );
+    );  
 
     icoComm->setReadConvertFcn(readConvert);
     icoComm->setWriteConvertFcn(writeConvert);
 
 
     // configure where setpoint values get stored when received
-    int xddp_uParam_Setpoint[1] = {
-        U_SETPOINT_PAN_INDEX   // first value is pan setpoint
+    int xddp_uParam_Setpoint_tilt[1] = {
+        U_SETPOINT_TILT_INDEX   // first value is pan setpoint
         // U_SETPOINT_TILT_INDEX   // second value is tilt setpoint
     };
 
-    // // configure encoder position logging
-    // int xddp_yParam_Logging[2] = {
-    //     U_MEASURED_PAN_INDEX,   // first value is pan position
-    //     U_MEASURED_TILT_INDEX   // second value is tilt position
-    // };
-
-    // configure motor output logging
-    int xddp_yParam_Logging[2] = {
-        Y_STEERING_PAN_INDEX,   // first value is pan output
-        Y_STEERING_TILT_INDEX   // second value is tilt output
+    int xddp_uParam_Setpoint_pan[1] = {
+        U_SETPOINT_PAN_INDEX   // first value is pan setpoint
+        // U_SETPOINT_TILT_INDEX   // second value is tilt setpoint
     };
 
     // controller gets position inputs from FPGA/SPI/IcoComm and setpoint inputs from ROS/XDDPComm
     frameworkComm *uPorts[] = {
         icoComm,
-        new XDDPComm(XDDP_SETPOINT_PORT, -1, 1, xddp_uParam_Setpoint)
+        new XDDPComm(XDDP_SETPOINT_PORT_TILT, -1, 1, xddp_uParam_Setpoint_tilt),
+        new XDDPComm(XDDP_SETPOINT_PORT_PAN, -1, 1, xddp_uParam_Setpoint_pan)
     };
 
     // controller outputs motor power to FPGA/SPI/IcoComm and logs position and output to ROS/XDDPComm
     frameworkComm *yPorts[] = {
-        icoComm,
-        new XDDPComm(XDDP_OUTPUT_LOG_PORT, XDDP_OUTPUT_LOG_PORT, 2, xddp_yParam_Logging),
+        icoComm
+        // new XDDPComm(XDDP_OUTPUT_LOG_PORT, XDDP_OUTPUT_LOG_PORT, 2, xddp_yParam_Logging),
     };
 
     ControllerPanTilt *controller_pan_tilt = new ControllerPanTilt();
+
+    controller_pan_tilt->SetFinishTime(0.0);
 
     runnable *controller = new wrapper<ControllerPanTilt>(
         controller_pan_tilt,
         uPorts,
         yPorts,
-        2,
-        2
+        3,
+        1
     );
 
-   
+    
+    // controller->setVerbose(true);
 
     // runnable *controller = new ControllerPanTiltRunnable();
 
@@ -257,7 +249,7 @@ int main()
 
     xenoThread controller_thread = xenoThread(controller); 
     
-    controller_thread.init(100000000, 99, 1);
+    controller_thread.init(1000000, 99, 1);
     // controller_thread.enableLogging(true, XDDP_POSITION_LOG_PORT);
     controller_thread.start("controller");
 
