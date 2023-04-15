@@ -28,11 +28,6 @@
 #define XDDP_SETPOINT_PORT_TILT   10 
 #define XDDP_SETPOINT_PORT_PAN    15
 
-// log position and output back to non-rt
-#define XDDP_POSITION_LOG_PORT  26
-#define XDDP_OUTPUT_LOG_PORT    22
-
-
 // conversion functions for IcoComm
 void readConvert(const double *src, double *dst) {
 
@@ -176,9 +171,7 @@ int main()
     printf("Ctrl-C was pressed: Stopping gracefully...\n");
 
     //CLEANUP HERE
-
-    // cleanup is mostly redundant as the OS will clean up after program termination
-    // however, it is good practice to do it anyway
+    
     controller_thread.stopThread();
     controller->~runnable();
 
