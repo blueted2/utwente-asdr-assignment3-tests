@@ -1,0 +1,63 @@
+launch:
+
+- arg:
+    name: threshold
+    default: "230"
+
+- arg:
+    name: tau_s
+    default: "4.0"
+
+- node:
+    pkg: image_tools
+    exec: cam2image
+    param:
+    -
+      name: frequency
+      value: 10.0
+    -
+      name: depth
+      value: 1
+    # -
+    #   name: burger_mode
+    #   value: true
+    
+
+- node:
+    pkg: light_pos
+    exec: light_pos
+    remap:
+    -
+      from: /image
+      to: /moving_camera_output
+    param:
+    -
+      name: brightness_threshold
+      value: $(var threshold)
+
+
+- node: 
+    pkg: jiwy_simulator
+    exec: jiwy_simulator
+    remap:
+      -
+        from: /webcam_input
+        to: /image
+
+      -
+        from: /setpoint
+        to: /setpoint_output
+
+
+- node:
+    pkg: closed_loop
+    exec: controller
+    param:
+    -
+      name: tau_s
+      value: $(var tau_s)
+    remap:
+    -
+      from: /cog_input
+      to: /cog_pos
+

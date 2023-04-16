@@ -43,10 +43,10 @@ void readConvert(const double *src, double *dst) {
 void writeConvert(const double *src, double *dst) { 
 
     // scale up normalized values
-    dst[0] = src[0] * 4096;
+    dst[0] = src[0] * 2048;
 
     // additional scaling for pan due to 4:1 gear ratio
-    dst[2] = src[2] * 4096 * 4;
+    dst[2] = src[2] * 2048 * 4;
 }
 
 
